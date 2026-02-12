@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Error 米 mii</title>
+
+<style>
+html,body{
+  margin:0;
+  height:100%;
+  overflow:hidden;
+  background:red;
+  font-family: Myriad, Arial, sans-serif;
+}
+
+#title{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:17vw;
+  color:rgba(0,0,0,0.11);
+  pointer-events:none;
+}
+
+.shake{
+  animation: shake 0.05s infinite;
+}
+
+@keyframes shake{
+  0%{ transform:translate(1px,-1px); }
+  25%{ transform:translate(-1px,1px); }
+  50%{ transform:translate(1px,1px); }
+  75%{ transform:translate(-1px,-1px); }
+  100%{ transform:translate(1px,-1px); }
+}
+
+.fragment{
+  position:fixed;
+  max-width:420px;
+  font-size:14px;
+  line-height:1.5;
+  color:black;
+  opacity:0;
+  pointer-events:none;
+  transition: opacity 1.2s ease-out;
+}
+
+.rice{
+  position:fixed;
+  border-radius:75% 25% 75% 25%;
+  transform-origin:center;
+  cursor:grab;
+  user-select:none;
+}
+
+.white{ background:white; }
+.black{ background:black; }
+</style>
+</head>
+
+<body>
+
+<div id="title">Error 米 mi</div>
+
+<script>
+const title=document.getElementById("title");
+
+/* ------------------ FRAGMENTS ------------------ */
+
+const conceptParts=[
+"Error 米 mi is an interdisciplinary art project",
+"focused on digital identity and global culture",
+"and on a fundamental life-sustaining element.",
+"Rice — 米 — .",
+"rice.",
+"rice.",
+"rice.",
+"rice.",
+"米.",
+"rice.",
+"rice.",
+"Memory becomes unreliable.",
+"memory unreliable."
+
+];
+
+let revealed=0;
+
+function revealFragment(){
+ if(revealed>=conceptParts.length) return;
+
+ const d=document.createElement("div");
+ d.className="fragment";
+ d.innerText=conceptParts[revealed++];
+
+ d.style.left=Math.random()*80+"vw";
+ d.style.top=Math.random()*80+"vh";
+ d.style.transform=`rotate(${Math.random()*8-4}deg)`;
+
+ document.body.appendChild(d);
+
+ requestAnimationFrame(()=> d.style.opacity=0.92);
+
+ setTimeout(()=>{
+   d.style.opacity=0;
+   setTimeout(()=> d.remove(),1200);
+ },2000+Math.random()*2500);
+}
+
+/* ------------------ RICE FACTORY ------------------ */
+
+function makeRice(color,x,y){
+ const el=document.createElement("div");
+ el.className="rice "+color;
+
+ const w=20+Math.random()*12;
+ const h=7+Math.random()*6;
+
+ el.style.width=w+"px";
+ el.style.height=h+"px";
+
+ el.style.left=(x ?? Math.random()*innerWidth)+"px";
+ el.style.top=(y ?? Math.random()*innerHeight)+"px";
+ el.style.transform=`rotate(${Math.random()*360}deg)`;
+
+ document.body.appendChild(el);
+ return el;
+}
+
+/* ------------------ GLOBAL DRAG SYSTEM ------------------ */
+
+let active=null,ox=0,oy=0;
+
+window.addEventListener("pointerdown",e=>{
+ if(!e.target.classList.contains("rice")) return;
+ active=e.target;
+ active.dragging=true;
+ ox=e.offsetX;
+ oy=e.offsetY;
+ title.classList.add("shake");
+});
+
+window.addEventListener("pointermove",e=>{
+ if(!active) return;
+ active.style.left=(e.clientX-ox)+"px";
+ active.style.top=(e.clientY-oy)+"px";
+});
+
+window.addEventListener("pointerup",()=>{
+ if(!active) return;
+ active.dragging=false;
+ active=null;
+ title.classList.remove("shake");
+});
+
+/* ------------------ STATIC RICE ------------------ */
+
+for(let i=0;i<63;i++) makeRice("white");
+for(let i=0;i<63;i++) makeRice("black");
+
+/* ------------------ AUTO RICE ------------------ */
+
+const autoW=makeRice("white",-40,innerHeight*0.3);
+const autoB=makeRice("black",innerWidth+40,innerHeight*0.65);
+
+let wx=-40;
+let bx=innerWidth+40;
+
+function animateAuto(){
+
+ if(!autoW.dragging){
+   wx+=1.4;
+   if(wx>innerWidth+40) wx=-40;
+   autoW.style.left=wx+"px";
+ }
+
+ if(!autoB.dragging){
+   bx-=1.4;
+   if(bx<-40) bx=innerWidth+40;
+   autoB.style.left=bx+"px";
+ }
+
+ requestAnimationFrame(animateAuto);
+}
+animateAuto();
+
+/* ------------------ AUDIO DRONE ------------------ */
+
+let audioStarted=false;
+
+function startHum(){
+ if(audioStarted) return;
+ audioStarted=true;
+
+ const ctx=new (window.AudioContext||window.webkitAudioContext)();
+
+ const osc1=ctx.createOscillator();
+ const osc2=ctx.createOscillator();
+ const gain=ctx.createGain();
+ const filter=ctx.createBiquadFilter();
+
+ osc1.type="sawtooth";
+ osc2.type="sine";
+
+ osc1.frequency.value=55;
+ osc2.frequency.value=63;
+
+ filter.type="lowpass";
+ filter.frequency.value=180;
+
+ gain.gain.value=0.18;
+
+ osc1.connect(filter);
+ osc2.connect(filter);
+ filter.connect(gain);
+ gain.connect(ctx.destination);
+
+ osc1.start();
+ osc2.start();
+
+ // élő lebegés
+ setInterval(()=>{
+   osc2.frequency.value=60+Math.random()*8;
+ },900);
+}
+
+/* ------------------ CLICK TRIGGER ------------------ */
+
+window.addEventListener("click",()=>{
+ revealFragment();
+ startHum();
+});
+</script>
+
+</body>
+</html>
+
